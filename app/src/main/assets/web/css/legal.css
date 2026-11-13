@@ -1,0 +1,112 @@
+/* J4Music · legal.css —— 协议 / 政策 / 许可页面
+ * 这些页面是独立的 HTML 文档（不在路由栈里），所以样式自足，
+ * 只复用 base.css 里的颜色变量与安全区变量。
+ */
+
+html, body.legal {
+  background: var(--bg-0, #07070c);
+  color: var(--text-1, #e8e8ef);
+}
+
+body.legal {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.legal__wrap {
+  padding: calc(var(--safe-t, 0px) + 28px) 20px calc(var(--safe-b, 0px) + 56px);
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.78;
+  font-size: 15px;
+}
+
+.legal__title {
+  font-size: 26px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  background: linear-gradient(120deg, #c7b8ff 0%, #9a7bff 42%, #ff8ab5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.legal__meta {
+  margin: 0 0 24px;
+  font-size: 12.5px;
+  color: var(--text-3, #7d7d90);
+  letter-spacing: 0.02em;
+}
+
+.legal__lead {
+  margin: 0 0 26px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(124, 92, 255, 0.09);
+  border: 1px solid rgba(124, 92, 255, 0.22);
+  color: var(--text-1, #e8e8ef);
+  font-size: 14.5px;
+}
+
+body.legal h2 {
+  font-size: 16.5px;
+  margin: 30px 0 10px;
+  color: var(--text-0, #fff);
+  letter-spacing: 0.01em;
+  padding-left: 11px;
+  border-left: 3px solid #9a7bff;
+  line-height: 1.4;
+}
+
+body.legal p {
+  margin: 0 0 13px;
+  color: var(--text-2, #b4b4c4);
+}
+
+body.legal ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+
+body.legal li {
+  margin: 0 0 8px;
+  color: var(--text-2, #b4b4c4);
+}
+
+body.legal strong {
+  color: var(--text-1, #e8e8ef);
+  font-weight: 600;
+}
+
+body.legal code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #c7b8ff;
+  word-break: break-all;
+}
+
+/* 站外链接：点击后由原生交给系统浏览器，这里给一个明确的视觉反馈 */
+.legal__link {
+  color: #8ab4ff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(138, 180, 255, 0.35);
+}
+
+.legal__link:active {
+  opacity: 0.6;
+}
+
+.legal__foot {
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12.5px;
+  color: var(--text-3, #7d7d90);
+  text-align: center;
+}

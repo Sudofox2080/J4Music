@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>J4Music 控制台</title>
+<style>
+  :root {
+    --bg-0: #07070c;
+    --bg-1: #0e0f16;
+    --bg-2: #14161f;
+    --line: rgba(255,255,255,.08);
+    --text: #f2f3f7;
+    --text-2: #9aa0b4;
+    --text-3: #6b7183;
+    --brand: #5b8cff;
+    --brand-2: #8b5cff;
+    --ok: #38d39f;
+    --warn: #ffb454;
+    --bad: #ff5d73;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg-0); color: var(--text); }
+  body {
+    font: 15px/1.55 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    padding: 22px 16px 60px;
+    max-width: 720px; margin: 0 auto;
+    background:
+      radial-gradient(1100px 620px at 12% -12%, rgba(91,140,255,.20), transparent 60%),
+      radial-gradient(900px 520px at 108% 4%, rgba(139,92,255,.16), transparent 58%),
+      var(--bg-0);
+    min-height: 100vh;
+  }
+  h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: .3px; }
+  .sub { color: var(--text-3); font-size: 12.5px; margin-bottom: 18px; }
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    border: 1px solid var(--line); border-radius: 16px; padding: 15px 16px; margin-bottom: 13px;
+    backdrop-filter: blur(8px);
+  }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .row.wrap { flex-wrap: wrap; }
+  .grow { flex: 1 1 auto; min-width: 0; }
+  .title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); box-shadow: 0 0 0 3px rgba(255,255,255,.05); }
+  .dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(56,211,159,.16); }
+  .dot.off { background: var(--bad); box-shadow: 0 0 0 3px rgba(255,93,115,.14); }
+  .meta { color: var(--text-3); font-size: 12.5px; margin-top: 6px; word-break: break-all; }
+  button {
+    appearance: none; border: 0; cursor: pointer; font: inherit; font-size: 13.5px;
+    padding: 9px 15px; border-radius: 11px; color: #fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    transition: transform .12s ease, opacity .12s ease, filter .12s ease;
+  }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.ghost { background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--text); }
+  /* 窄屏上按钮不该被挤成竖排（「保/存」那种），输入框吃掉剩余宽度即可 */
+  .row > button { flex: 0 0 auto; white-space: nowrap; }
+  .row > input, .row > select { flex: 1 1 auto; min-width: 0; width: auto; }
+  button.danger { background: rgba(255,93,115,.14); border: 1px solid rgba(255,93,115,.34); color: #ffb3bd; }
+  button.sm { padding: 7px 12px; font-size: 12.5px; border-radius: 9px; }
+  input, select, textarea {
+    appearance: none; width: 100%; font: inherit; font-size: 13.5px; color: var(--text);
+    background: var(--bg-1); border: 1px solid var(--line); border-radius: 11px; padding: 10px 12px; outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: rgba(91,140,255,.55); box-shadow: 0 0 0 3px rgba(91,140,255,.14); }
+  textarea { resize: vertical; min-height: 74px; font-size: 12.5px; line-height: 1.5; }
+  .qrwrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 6px 0 2px; }
+  .qrbox { width: 216px; height: 216px; background: #fff; border-radius: 14px; padding: 10px; display: flex; align-items: center; justify-content: center; }
+  .qrbox img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; border-radius: 6px; }
+  .qrstatus { font-size: 13px; color: var(--text-2); text-align: center; min-height: 20px; }
+  .hint { color: var(--text-3); font-size: 12px; line-height: 1.6; }
+  .results { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+  .item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.035); }
+  .item img, .item .ph { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; background: #1b1e29; flex: 0 0 auto; }
+  .item .ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 13px; }
+  .item .t { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .a { font-size: 11.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { font-size: 10.5px; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,.07); color: var(--text-2); }
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 12px);
+    background: rgba(22,24,34,.96); border: 1px solid var(--line); color: var(--text);
+    padding: 11px 16px; border-radius: 12px; font-size: 13px; opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease; max-width: 88vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .sep { height: 1px; background: var(--line); margin: 13px 0; }
+  a { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<h1>J4Music 控制台</h1>
+<div class="sub">在这里扫码或粘贴 Cookie 登录上游账号，App 端不用再登录就能用会员音源</div>
+
+<div class="card">
+  <div class="row wrap">
+    <div class="grow">
+      <div class="title"><span class="dot" id="dock"></span><span id="dtext">正在连接服务…</span></div>
+      <div class="meta" id="dmeta">—</div>
+    </div>
+    <button class="ghost sm" id="btnRefresh">刷新</button>
+  </div>
+  <div class="sep"></div>
+  <div class="row">
+    <input id="token" placeholder="访问口令（X-J4-Token）" autocomplete="off">
+    <button class="sm" id="btnToken">保存</button>
+  </div>
+  <div class="meta">口令只存在这个浏览器里，用来调本服务的接口。</div>
+</div>
+
+<div class="card" data-plat="netease">
+  <div class="row wrap">
+    <div class="grow">
+      <div class="title"><span class="dot" id="dot-netease"></span>网易云音乐</div>
+      <div class="meta" id="meta-netease">未登录</div>
+    </div>
+    <button class="sm" data-qr="netease">扫码登录</button>
+    <button class="ghost sm" data-paste="netease">粘贴 Cookie</button>
+    <button class="danger sm" data-logout="netease" style="display:none">退出</button>
+  </div>
+</div>
+
+<div class="card" data-plat="qqmusic">
+  <div class="row wrap">
+    <div class="grow">
+      <div class="title"><span class="dot" id="dot-qqmusic"></span>QQ 音乐</div>
+      <div class="meta" id="meta-qqmusic">未登录</div>
+    </div>
+    <button class="sm" data-qr="qqmusic">扫码登录</button>
+    <button class="ghost sm" data-paste="qqmusic">粘贴 Cookie</button>
+    <button class="danger sm" data-logout="qqmusic" style="display:none">退出</button>
+  </div>
+</div>
+
+<div class="card" id="qrCard" style="display:none">
+  <div class="row">
+    <div class="title grow" id="qrTitle">扫码登录</div>
+    <button class="ghost sm" id="btnQrClose">关闭</button>
+  </div>
+  <div class="qrwrap">
+    <div class="qrbox" id="qrBox"></div>
+    <div class="qrstatus" id="qrStatus">正在获取二维码…</div>
+    <button class="ghost sm" id="btnQrReload">换一张</button>
+  </div>
+  <div class="hint" style="text-align:center">手机 App 扫完并在手机上点「确认登录」，这里会自动完成。</div>
+</div>
+
+<div class="card" id="pasteCard" style="display:none">
+  <div class="row">
+    <div class="title grow" id="pasteTitle">粘贴 Cookie</div>
+    <button class="ghost sm" id="btnPasteClose">关闭</button>
+  </div>
+  <div class="meta" id="pasteHint"></div>
+  <textarea id="pasteBox" placeholder="MUSIC_U=...; __csrf=..."></textarea>
+  <div class="row" style="margin-top:10px">
+    <div class="grow"></div>
+    <button id="btnPasteSave">保存登录态</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="title">搜索测试</div>
+  <div class="row wrap" style="margin-top:10px">
+    <input class="grow" id="kw" placeholder="歌名 / 歌手，例如 晴天" value="晴天">
+    <select id="plat" style="width:120px">
+      <option value="netease">网易云</option>
+      <option value="qqmusic">QQ 音乐</option>
+    </select>
+    <button class="sm" id="btnSearch">搜索</button>
+  </div>
+  <div class="results" id="results"></div>
+  <div class="meta" id="searchMeta"></div>
+</div>
+
+<div class="card">
+  <div class="title">App 端怎么用</div>
+  <div class="hint" style="margin-top:8px">
+    这台服务器已经接住登录态了。手机上的 J4Music 只要在「设置 → 上游服务」里填
+    <b id="baseHint">（本服务地址）</b> 和口令，搜索和播放就会自动带上这里的会员账号，
+    不用在手机上再登一次。<br><br>
+    想分开用也可以：手机上自己扫码登录后，请求会优先用手机本地那份 Cookie。
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var TOKEN_KEY = 'j4.console.token';
+  var state = { token: localStorage.getItem(TOKEN_KEY) || '', qr: null, timer: null };
+  var PLAT_NAME = { netease: '网易云音乐', qqmusic: 'QQ 音乐' };
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+  }
+
+  function api(path, opts) {
+    opts = opts || {};
+    var url = path + (path.indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(state.token);
+    var init = { method: opts.method || 'GET', headers: {} };
+    if (opts.body) {
+      init.headers['Content-Type'] = 'application/json';
+      init.body = JSON.stringify(opts.body);
+    }
+    return fetch(url, init).then(function (r) {
+      if (r.status === 401) throw new Error('口令不对，检查上面的访问口令');
+      return r.text().then(function (t) {
+        var j = null;
+        try { j = JSON.parse(t); } catch (e) {}
+        if (!r.ok) throw new Error((j && (j.msg || j.message)) || ('HTTP ' + r.status));
+        return j;
+      });
+    });
+  }
+
+  function maskCookie(c) {
+    if (!c) return '';
+    var first = c.split(';')[0].trim();
+    if (first.length > 42) first = first.slice(0, 42) + '…';
+    return first;
+  }
+
+  function paintState(d) {
+    $('dock').className = 'dot ' + (d && d.ok ? 'on' : 'off');
+    $('dtext').textContent = d && d.ok ? '服务正常' : '服务异常';
+    var bits = [];
+    if (d && d.uptime != null) bits.push('已运行 ' + Math.floor(d.uptime / 60) + ' 分钟');
+    if (d && d.upstream) bits.push('上游 ' + d.upstream);
+    $('dmeta').textContent = bits.join(' · ') || '—';
+    ['netease', 'qqmusic'].forEach(function (p) {
+      var c = (d && d.cookies && d.cookies[p]) || null;
+      var dot = $('dot-' + p), meta = $('meta-' + p);
+      var out = document.querySelector('[data-logout="' + p + '"]');
+      if (c && c.cookie) {
+        dot.className = 'dot on';
+        var since = c.at ? new Date(c.at).toLocaleString('zh-CN', { hour12: false }) : '';
+        meta.textContent = '已登录 · ' + (c.uid ? 'uid ' + c.uid + ' · ' : '') + maskCookie(c.cookie) + (since ? ' · ' + since : '');
+        out.style.display = '';
+      } else {
+        dot.className = 'dot';
+        meta.textContent = '未登录（匿名只能取到试听/免费曲目）';
+        out.style.display = 'none';
+      }
+    });
+  }
+
+  function refresh() {
+    return api('/api/state').then(function (d) { paintState(d); return d; })
+      .catch(function (e) {
+        $('dock').className = 'dot off';
+        $('dtext').textContent = '服务连不上';
+        $('dmeta').textContent = e.message;
+      });
+  }
+
+  /* ---------------- 扫码登录 ---------------- */
+  function stopPoll() {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+  }
+
+  function closeQr() {
+    stopPoll();
+    state.qr = null;
+    $('qrCard').style.display = 'none';
+    $('qrBox').innerHTML = '';
+  }
+
+  function openQr(plat) {
+    stopPoll();
+    $('qrCard').style.display = '';
+    $('qrTitle').textContent = '登录 ' + PLAT_NAME[plat];
+    $('qrBox').innerHTML = '';
+    $('qrStatus').textContent = '正在获取二维码…';
+    state.qr = { plat: plat, key: '', img: '' };
+    // 卡片在页面下方，点完按钮要把它滚到眼前，不然手机上看着像「没反应」
+    try { $('qrCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { $('qrCard').scrollIntoView(); }
+    loadQr();
+  }
+
+  function loadQr() {
+    var plat = state.qr.plat;
+    stopPoll();
+    $('qrStatus').textContent = '正在获取二维码…';
+    api('/login/qr/key?platform=' + plat).then(function (j) {
+      var body = (j && j.body) || j || {};
+      var data = body.data || {};
+      var key = data.unikey || '';
+      if (!key) throw new Error('没有拿到二维码 key');
+      state.qr.key = key;
+      var img = data.qrImg || '';
+      if (img.indexOf('data:image') === 0) return setQrImage(img);
+      // 网易只给 unikey，二维码内容得自己拼；图片交给网关的 /qr 生成
+      var text = plat === 'netease'
+        ? 'https://music.163.com/login?codekey=' + key
+        : key;
+      return api('/qr?text=' + encodeURIComponent(text)).then(function (q) {
+        if (!q || !q.dataUri) throw new Error('二维码生成失败');
+        setQrImage(q.dataUri);
+      });
+    }).catch(function (e) {
+      $('qrStatus').textContent = '获取二维码失败：' + e.message;
+    });
+  }
+
+  function setQrImage(src) {
+    var box = $('qrBox');
+    box.innerHTML = '';
+    var img = document.createElement('img');
+    img.src = src;
+    img.alt = '登录二维码';
+    box.appendChild(img);
+    state.qr.img = src;
+    $('qrStatus').textContent = '请用手机 App 扫码';
+    pollOnce();
+    stopPoll();
+    state.timer = setInterval(pollOnce, 2600);
+  }
+
+  function pollOnce() {
+    if (!state.qr || !state.qr.key) return;
+    var plat = state.qr.plat;
+    api('/login/qr/check?key=' + encodeURIComponent(state.qr.key) + '&platform=' + plat).then(function (j) {
+      var body = (j && j.body) || {};
+      var code = body.code != null ? body.code : (j && j.code);
+      if (code === 800) {
+        $('qrStatus').textContent = '二维码过期了，点「换一张」';
+        stopPoll();
+      } else if (code === 801) {
+        $('qrStatus').textContent = '等待扫码…';
+      } else if (code === 802) {
+        $('qrStatus').textContent = '已扫码，请在手机上确认';
+      } else if (code === 803) {
+        stopPoll();
+        $('qrStatus').textContent = '登录成功，正在保存…';
+        refresh().then(function (d) {
+          var c = d && d.cookies && d.cookies[plat];
+          if (c && c.cookie) {
+            closeQr();
+            toast(PLAT_NAME[plat] + ' 登录成功');
+          } else {
+            // 上游回了 803 却没带票据，界面别装成功：这是「扫码成功仍显示未登录」的老毛病
+            $('qrStatus').textContent = '上游说登录成功了，但没拿到登录票据，请改用「粘贴 Cookie」';
+          }
+        });
+      } else {
+        $('qrStatus').textContent = (body.message || ('状态 ' + code));
+      }
+    }).catch(function (e) {
+      $('qrStatus').textContent = '轮询失败：' + e.message;
+    });
+  }
+
+  /* ---------------- 粘贴 Cookie ---------------- */
+  var pastePlat = 'netease';
+  function openPaste(plat) {
+    pastePlat = plat;
+    $('pasteCard').style.display = '';
+    $('pasteTitle').textContent = '粘贴 ' + PLAT_NAME[plat] + ' Cookie';
+    $('pasteHint').textContent = plat === 'netease'
+      ? '浏览器打开 music.163.com 登录后，F12 → Network → 任意请求的 Cookie 整段复制进来（含 MUSIC_U）。'
+      : '浏览器打开 y.qq.com 登录后，F12 → Network → 任意请求的 Cookie 整段复制进来（含 qqmusic_key 与 uin）。';
+    $('pasteBox').value = '';
+    try { $('pasteCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { $('pasteCard').scrollIntoView(); }
+    $('pasteBox').focus();
+  }
+
+  $('btnPasteSave').onclick = function () {
+    var raw = ($('pasteBox').value || '').trim();
+    if (!raw) { toast('先粘贴 Cookie'); return; }
+    var btn = this;
+    btn.disabled = true;
+    api('/api/login/save', { method: 'POST', body: { platform: pastePlat, cookie: raw } })
+      .then(function () {
+        $('pasteCard').style.display = 'none';
+        toast(PLAT_NAME[pastePlat] + ' 登录态已保存');
+        return refresh();
+      })
+      .catch(function (e) { toast('保存失败：' + e.message); })
+      .then(function () { btn.disabled = false; });
+  };
+
+  /* ---------------- 事件绑定 ---------------- */
+  $('btnToken').onclick = function () {
+    state.token = ($('token').value || '').trim();
+    localStorage.setItem(TOKEN_KEY, state.token);
+    toast('口令已保存');
+    refresh();
+  };
+  $('btnRefresh').onclick = function () { refresh(); };
+  $('btnQrClose').onclick = closeQr;
+  $('btnQrReload').onclick = function () { if (state.qr) loadQr(); };
+  $('btnPasteClose').onclick = function () { $('pasteCard').style.display = 'none'; };
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-qr]'), function (b) {
+    b.onclick = function () { openQr(b.getAttribute('data-qr')); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-paste]'), function (b) {
+    b.onclick = function () { openPaste(b.getAttribute('data-paste')); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-logout]'), function (b) {
+    b.onclick = function () {
+      var plat = b.getAttribute('data-logout');
+      if (!confirm('确定退出 ' + PLAT_NAME[plat] + ' 吗？服务器上的登录态会被清掉。')) return;
+      api('/api/login/clear', { method: 'POST', body: { platform: plat } })
+        .then(function () { toast('已退出'); return refresh(); })
+        .catch(function (e) { toast('退出失败：' + e.message); });
+    };
+  });
+
+  $('btnSearch').onclick = function () {
+    var kw = ($('kw').value || '').trim();
+    if (!kw) { toast('输入点什么'); return; }
+    var plat = $('plat').value;
+    var btn = this;
+    btn.disabled = true;
+    $('searchMeta').textContent = '搜索中…';
+    $('results').innerHTML = '';
+    var t0 = Date.now();
+    api('/search?platform=' + plat + '&keywords=' + encodeURIComponent(kw) + '&limit=8&type=1')
+      .then(function (j) {
+        var songs = (j && j.result && j.result.songs) || [];
+        $('searchMeta').textContent = songs.length + ' 条 · ' + (Date.now() - t0) + 'ms' + (j && j.cached ? ' · 缓存' : '');
+        songs.forEach(function (s) {
+          var row = el('div', 'item');
+          var pic = (s.al && s.al.picUrl) || (s.album && s.album.picUrl) || '';
+          if (pic) {
+            var im = document.createElement('img');
+            im.src = pic;
+            row.appendChild(im);
+          } else {
+            row.appendChild(el('div', 'ph', (s.name || '?').slice(0, 1)));
+          }
+          var body = el('div', 'grow');
+          body.appendChild(el('div', 't', s.name || ''));
+          var ar = (s.ar || s.artists || []).map(function (a) { return a.name; }).join(' / ');
+          body.appendChild(el('div', 'a', ar + (s.al && s.al.name ? ' · ' + s.al.name : '')));
+          row.appendChild(body);
+          if (s.fee === 1 || s.fee === 4) row.appendChild(el('span', 'badge', 'VIP'));
+          $('results').appendChild(row);
+        });
+        if (!songs.length) $('searchMeta').textContent = '0 条（QQ 偶发限流，再点一次试试）';
+      })
+      .catch(function (e) { $('searchMeta').textContent = '搜索失败：' + e.message; })
+      .then(function () { btn.disabled = false; });
+  };
+
+  $('token').value = state.token;
+  $('baseHint').textContent = location.origin;
+  refresh();
+  setInterval(function () { if (!document.hidden && !state.qr) refresh(); }, 20000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>第三方组件与开源许可</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/legal.css">
+</head>
+<body class="legal">
+<main class="legal__wrap">
+  <h1 class="legal__title">第三方组件与开源许可</h1>
+  <p class="legal__meta">J4Music 1.0.0</p>
+
+  <p class="legal__lead">本应用在构建时链接了下列开源组件。它们各自遵循自己的许可证，此处列出以便你核对来源。</p>
+
+  <h2>运行时框架</h2>
+  <ul>
+    <li>Kotlin 标准库 2.0.21 · Apache License 2.0</li>
+    <li>AndroidX Core KTX 1.13.1 · Apache License 2.0</li>
+    <li>AndroidX AppCompat 1.7.0 · Apache License 2.0</li>
+    <li>AndroidX Media3（ExoPlayer / Session / DataSource / Extractor / Decoder）1.5.1 · Apache License 2.0</li>
+    <li>OkHttp 4.12.0 · Apache License 2.0</li>
+    <li>KotlinX Coroutines 1.9.0 · Apache License 2.0</li>
+    <li>KotlinX Serialization JSON 1.8.1 · Apache License 2.0</li>
+  </ul>
+
+  <h2>界面层</h2>
+  <p>应用的界面是一组手写的 HTML、CSS 与 JavaScript，运行在系统 WebView 中，没有引入任何前端框架或 UI 组件库。图标为内联 SVG 路径，字体使用系统字体。</p>
+
+  <h2>音频合成示例</h2>
+  <p>「离线演示集」里的四段音频由本仓库的 <code>tools/gen_demo_audio.py</code> 用正弦波合成，不包含任何第三方录音。它们用于在没有网络时验证播放链路。</p>
+
+  <h2>Apache License 2.0 摘要</h2>
+  <p>你可以自由使用、修改和再分发这些组件，包括用于商业用途，条件是保留版权声明与许可证文本，并在修改过的文件中注明改动。许可证不提供任何担保。完整文本见 <a class="legal__link" href="https://www.apache.org/licenses/LICENSE-2.0">apache.org/licenses/LICENSE-2.0</a>。</p>
+
+  <h2>本应用的代码</h2>
+  <p>应用自身的 Kotlin 与前端代码版权归其作者所有。加密格式的解密规格参考了公开的技术文档，实现为本仓库独立编写。</p>
+
+  <p class="legal__foot">J4Music · 离线优先的安卓音乐播放器</p>
+</main>
+</body>
+</html>

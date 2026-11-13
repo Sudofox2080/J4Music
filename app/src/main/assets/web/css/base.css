@@ -1,0 +1,378 @@
+/* =========================================================================
+   J4Music · base.css
+   变量 / 三套主题 / reset / 安全区 / 滚动条 / 排版基线
+   主题切换只改 :root[data-theme="x"] 上的变量，配合 transition 平滑过渡。
+   ========================================================================= */
+
+:root {
+  /* ---- 主题：Aurora（默认，紫粉） ---- */
+  --c-accent-1: #7c5cff;
+  --c-accent-2: #ff6fd8;
+  --c-accent-3: #a78bfa;
+  --c-accent-soft: rgba(124, 92, 255, 0.16);
+  --c-accent-line: rgba(124, 92, 255, 0.38);
+  --grad-brand: linear-gradient(120deg, var(--c-accent-1) 0%, var(--c-accent-2) 100%);
+  --grad-brand-soft: linear-gradient(120deg, rgba(124, 92, 255, 0.28) 0%, rgba(255, 111, 216, 0.28) 100%);
+  --grad-text: linear-gradient(96deg, #ffffff 0%, #d9d2ff 45%, #ffb3ea 100%);
+  --glow-1: rgba(124, 92, 255, 0.42);
+  --glow-2: rgba(255, 111, 216, 0.34);
+
+  /* ---- 表面层（越往上越亮） ---- */
+  --bg-0: #07070c;
+  --bg-1: #0b0b14;
+  --bg-2: #12121f;
+  --surface-1: #101018;
+  --surface-2: #171725;
+  --surface-3: #1f1f30;
+  --surface-glass: rgba(22, 22, 36, 0.72);
+  --surface-glass-strong: rgba(14, 14, 24, 0.92);
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.13);
+
+  /* ---- 文本 ---- */
+  --text-1: #f5f3ff;
+  --text-2: rgba(232, 229, 255, 0.66);
+  --text-3: rgba(232, 229, 255, 0.4);
+  --text-inverse: #0a0a12;
+
+  /* ---- 语义色 ---- */
+  --ok: #3ddc97;
+  --warn: #ffb84d;
+  --danger: #ff5470;
+
+  /* ---- 尺寸 / 节奏 ---- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-full: 999px;
+  --page-pad: 18px;
+  --gap: 12px;
+  --tabbar-h: 60px;
+  --minibar-h: 62px;
+  --header-h: 52px;
+  /* 安全区：WebView 里 env(safe-area-inset-*) 恒为 0（全屏 + 不接管系统栏时
+     Chromium 不会上报），所以原生侧会用 J4Inset(top,bottom,left,right) 在
+     文档上覆写 --safe-t/--safe-b/--safe-l/--safe-r。env() 只作为浏览器预览的兜底。 */
+  --safe-t: 0px;
+  --safe-b: 0px;
+  --safe-l: 0px;
+  --safe-r: 0px;
+
+  /* ---- 动效基准 ---- */
+  --ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
+  --ease-in-out: cubic-bezier(0.6, 0.05, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+  --dur-slow: 420ms;
+
+  /* ---- 字体（只用系统字体栈，离线可用） ---- */
+  --font-ui: -apple-system, "SF Pro Text", "Segoe UI", "PingFang SC",
+    "HarmonyOS Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", Roboto, sans-serif;
+  --font-num: "SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
+
+  /* ---- 阴影 ---- */
+  --shadow-1: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --shadow-2: 0 14px 44px rgba(0, 0, 0, 0.52);
+  --shadow-glow: 0 10px 40px -8px var(--glow-1);
+
+  color-scheme: dark;
+  /* 主题整体过渡：只过渡颜色类属性，避免触发布局 */
+  font-size: 16px;
+}
+
+/* ---- 主题：Deep（青蓝） ---- */
+:root[data-theme="deep"] {
+  --c-accent-1: #22d3ee;
+  --c-accent-2: #3b82f6;
+  --c-accent-3: #67e8f9;
+  --c-accent-soft: rgba(34, 211, 238, 0.16);
+  --c-accent-line: rgba(34, 211, 238, 0.38);
+  --grad-brand: linear-gradient(120deg, #22d3ee 0%, #3b82f6 100%);
+  --grad-brand-soft: linear-gradient(120deg, rgba(34, 211, 238, 0.28) 0%, rgba(59, 130, 246, 0.28) 100%);
+  --grad-text: linear-gradient(96deg, #ffffff 0%, #c9f3ff 45%, #a9c8ff 100%);
+  --glow-1: rgba(34, 211, 238, 0.4);
+  --glow-2: rgba(59, 130, 246, 0.34);
+  --bg-0: #050a10;
+  --bg-1: #081018;
+  --bg-2: #0d1a26;
+  --surface-1: #0b141d;
+  --surface-2: #10202c;
+  --surface-3: #162b3a;
+  --surface-glass: rgba(12, 26, 38, 0.72);
+  --surface-glass-strong: rgba(6, 15, 22, 0.92);
+  --text-1: #eefaff;
+  --text-2: rgba(213, 240, 255, 0.66);
+  --text-3: rgba(213, 240, 255, 0.4);
+}
+
+/* ---- 主题：Sunset（橙红） ---- */
+:root[data-theme="sunset"] {
+  --c-accent-1: #ff8a5b;
+  --c-accent-2: #ff3d71;
+  --c-accent-3: #ffb37a;
+  --c-accent-soft: rgba(255, 138, 91, 0.16);
+  --c-accent-line: rgba(255, 138, 91, 0.38);
+  --grad-brand: linear-gradient(120deg, #ff8a5b 0%, #ff3d71 100%);
+  --grad-brand-soft: linear-gradient(120deg, rgba(255, 138, 91, 0.28) 0%, rgba(255, 61, 113, 0.28) 100%);
+  --grad-text: linear-gradient(96deg, #ffffff 0%, #ffe0cc 45%, #ffb3c6 100%);
+  --glow-1: rgba(255, 138, 91, 0.42);
+  --glow-2: rgba(255, 61, 113, 0.34);
+  --bg-0: #0c0607;
+  --bg-1: #150a0c;
+  --bg-2: #1e0f13;
+  --surface-1: #150c10;
+  --surface-2: #1d1116;
+  --surface-3: #27171d;
+  --surface-glass: rgba(28, 15, 20, 0.74);
+  --surface-glass-strong: rgba(14, 7, 10, 0.93);
+  --text-1: #fff4ee;
+  --text-2: rgba(255, 228, 216, 0.66);
+  --text-3: rgba(255, 228, 216, 0.4);
+}
+
+/* ---- reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color var(--dur-slow) var(--ease-out), color var(--dur) var(--ease-out);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  border: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  outline: 0;
+}
+
+button {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+a {
+  color: var(--c-accent-3);
+  text-decoration: none;
+}
+
+svg {
+  display: block;
+  flex: none;
+}
+
+/* 允许选中文本的少数区域（歌单分享文本等） */
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ---- 滚动条 ---- */
+.scroller {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: var(--r-full);
+}
+
+.scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ---- 布局基座 ---- */
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 70% at 50% -10%, var(--bg-2) 0%, transparent 60%),
+    var(--bg-0);
+  transition: background-color var(--dur-slow) var(--ease-out);
+}
+
+/* 全局氛围光斑（很淡，固定不动，避免持续重绘） */
+#app::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(38% 30% at 12% 8%, var(--glow-1) 0%, transparent 70%),
+    radial-gradient(34% 26% at 86% 22%, var(--glow-2) 0%, transparent 72%);
+  opacity: 0.28;
+  filter: saturate(1.1);
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.page-host {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  z-index: 1;
+}
+
+/* ---- 安全区工具类 ---- */
+.safe-top {
+  padding-top: var(--safe-t);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-b);
+}
+
+.pad-safe {
+  padding-left: max(var(--page-pad), var(--safe-l));
+  padding-right: max(var(--page-pad), var(--safe-r));
+}
+
+/* ---- 通用文本工具类 ---- */
+.t1 {
+  color: var(--text-1);
+}
+
+.t2 {
+  color: var(--text-2);
+}
+
+.t3 {
+  color: var(--text-3);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.mono {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.grad-text {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* 降低动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+}

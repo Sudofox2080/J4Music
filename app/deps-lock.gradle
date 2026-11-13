@@ -1,0 +1,14 @@
+// 离线约束下把传递依赖的版本统一钉死，避免解析到本地仓库里不存在的版本。
+//
+// 背景：kotlin 2.0.21 起 kotlin-stdlib-jdk7/jdk8 已经合并进 kotlin-stdlib，这两个坐标
+// 只发到 1.9.x 和 2.2.x。所以 jdk7/jdk8 钉到 1.9.20（空壳，只是指向 stdlib），
+// stdlib 本体与 common 钉到 2.0.21。
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-common:2.0.21'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.20'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
+        force 'org.jetbrains.kotlin:kotlin-bom:1.8.22'
+    }
+}

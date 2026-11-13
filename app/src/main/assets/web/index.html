@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#07070C" />
+  <meta name="format-detection" content="telephone=no,email=no,address=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>J4Music</title>
+
+  <!-- 样式：变量/主题 → 基础组件 → 页面布局 → 动效 → 补丁 -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/patch.css" />
+</head>
+<body>
+  <!-- 状态栏那一条的底色。页面滚动容器从 y=0 开始（全屏 + 透明状态栏），
+       内容会从系统状态栏下面穿过去，而 sticky 头部是钉在 --safe-t 下方的，
+       顶上这段就没人遮 —— 看起来像一块跟着文字移动的黑影、还漏出透明状态栏。
+       这块固定遮片专治这个，z-index 要低于页头(12)与播放页(40)。 -->
+  <div class="statusbar-scrim" aria-hidden="true"></div>
+
+  <!-- 整个应用只挂这一个节点，所有页面由 js/router.js 动态构建 -->
+  <div id="app"></div>
+
+  <!-- 启动期兜底：JS 未就绪时显示品牌与加载动画 -->
+  <noscript>
+    <div style="padding:80px 24px;text-align:center;color:#9aa0b5;font-family:system-ui,sans-serif">
+      J4Music 需要启用 JavaScript。
+    </div>
+  </noscript>
+
+  <!--
+    脚本加载顺序（全部普通脚本 + defer，不用 ES module，
+    避免 file:// 下的 CORS 限制；所有模块挂在 window 命名空间上）
+
+      1. mock.js     假数据 + J4Mock.invoke（浏览器预览用）
+      2. bridge.js   J4Native 封装、Promise 化、mock 回退
+      3. store.js    极简响应式状态
+      4. dom.js      DOM 工具 + 内联 SVG 图标集
+      5. router.js   页面栈路由
+      6. ui.js       通用 UI 组件（toast/sheet/menu/虚拟列表/滑动）
+      7. lyric.js    歌词渲染与逐字动效
+      8. queue.js    播放队列
+      9. player.js   迷你播放条 + 播放页
+     10. ui/*.js     各页面（home/discover/library/settings/playlist/
+                     search/local/download/translate/login/cloud）
+     11. app.js      启动与全局事件
+  -->
+  <script defer src="js/mock.js"></script>
+  <script defer src="js/bridge.js"></script>
+  <script defer src="js/store.js"></script>
+  <script defer src="js/dom.js"></script>
+  <script defer src="js/router.js"></script>
+  <script defer src="js/ui.js"></script>
+  <script defer src="js/lyric.js"></script>
+  <script defer src="js/queue.js"></script>
+  <script defer src="js/player.js"></script>
+
+  <script defer src="js/ui/home.js"></script>
+  <script defer src="js/ui/discover.js"></script>
+  <script defer src="js/ui/library.js"></script>
+  <script defer src="js/ui/settings.js"></script>
+  <script defer src="js/ui/playlist.js"></script>
+  <script defer src="js/ui/favorites.js"></script>
+  <script defer src="js/ui/search.js"></script>
+  <script defer src="js/ui/local.js"></script>
+  <script defer src="js/ui/download.js"></script>
+  <script defer src="js/ui/translate.js"></script>
+  <script defer src="js/ui/login.js"></script>
+  <script defer src="js/ui/cloud.js"></script>
+
+  <script defer src="js/app.js"></script>
+</body>
+</html>

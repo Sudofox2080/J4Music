@@ -1,0 +1,90 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+}
+
+android {
+    namespace 'com.j4.music'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.j4.music"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword System.getenv("J4_STORE_PASS") ?: "android"
+            keyAlias "androiddebugkey"
+            keyPassword System.getenv("J4_KEY_PASS") ?: "android"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        buildConfig true
+    }
+    androidResources {
+        noCompress 'pak', 'gz'
+    }
+    packagingOptions {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/versions/9/previous-compilation-data.bin']
+        }
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+// 离线仓库里可用的版本有限，把传递依赖钉到实际存在的版本上
+apply from: 'deps-lock.gradle'
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+
+    // 后台播放核心：Media3 ExoPlayer + MediaSessionService
+    implementation 'androidx.media3:media3-exoplayer:1.5.1'
+    implementation 'androidx.media3:media3-session:1.5.1'
+    implementation 'androidx.media3:media3-datasource-okhttp:1.5.1'
+    implementation 'androidx.media3:media3-datasource:1.5.1'
+    implementation 'androidx.media3:media3-common:1.5.1'
+    implementation 'androidx.media3:media3-extractor:1.5.1'
+    implementation 'androidx.media3:media3-decoder:1.5.1'
+
+    // 网络层：统一的 UA / Cookie / 二维码登录
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // JSON：音源接口与前端 JS 桥
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+}

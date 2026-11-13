@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      parent 必须是 AppCompat 主题的后代：MainActivity 继承 AppCompatActivity，
+      它在 setContentView 里要创建 AppCompat 的 sub-decor，父级不是 AppCompat
+      会直接抛 IllegalStateException("You need to use a Theme.AppCompat theme")，
+      表现为启动即闪退。
+      DayNight 让 system 切深色/浅色时不崩；我们自己的 UI 由 WebView 里的前端主题控制。
+    -->
+    <style name="Theme.J4Music" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">#07070C</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- AppCompat 自带的背景会盖住上面的深空色，关掉 -->
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
+
+    <!-- 启动即深空渐变，避免 WebView 首帧白闪 -->
+    <style name="Theme.J4Music.Splash" parent="Theme.J4Music">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+    </style>
+
+</resources>

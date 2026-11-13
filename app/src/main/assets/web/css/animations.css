@@ -1,0 +1,396 @@
+/* =========================================================================
+   J4Music · animations.css
+   所有 keyframes 与过渡。原则：只动 transform / opacity / filter，
+   绝不动 width/height/top/left，保证合成层动画 60fps。
+   ========================================================================= */
+
+/* ---------- 页面切换 ---------- */
+@keyframes page-push-in {
+  from {
+    transform: translate3d(38%, 0, 0) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes page-push-out-back {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-16%, 0, 0) scale(0.94);
+    opacity: 0.35;
+  }
+}
+
+@keyframes page-pop-out {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(38%, 0, 0) scale(0.97);
+    opacity: 0;
+  }
+}
+
+@keyframes page-pop-in-back {
+  from {
+    transform: translate3d(-16%, 0, 0) scale(0.94);
+    opacity: 0.35;
+  }
+  to {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tab-fade-in {
+  from {
+    transform: translate3d(0, 8px, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    transform: translate3d(0, 14px, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- 播放页：动态封面背景 ---------- */
+@keyframes bg-drift-a {
+  0% {
+    transform: translate3d(-6%, -4%, 0) scale(1.05) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(6%, 5%, 0) scale(1.16) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(-6%, -4%, 0) scale(1.05) rotate(0deg);
+  }
+}
+
+@keyframes bg-drift-b {
+  0% {
+    transform: translate3d(8%, 6%, 0) scale(1.2);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(-8%, -6%, 0) scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(8%, 6%, 0) scale(1.2);
+    opacity: 0.45;
+  }
+}
+
+/*
+ * 背景遮罩的「呼吸」只动 transform。
+ * 以前这里同时补间 filter: blur(46px → 52px) —— 安卓 WebView 每帧都要为整块
+ * 全屏图层重新做一次高斯模糊，GPU 吃不住就会掉帧、闪烁（用户看到的「背景在闪」）。
+ * 模糊值固定在元素上，只缩放，等于对一张缓存好的位图做采样，代价几乎为零。
+ */
+@keyframes bg-cover-breathe {
+  0%,
+  100% {
+    transform: scale(1.32) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.4) translate3d(0, -1.5%, 0);
+  }
+}
+
+/* ---------- 唱片旋转 / 呼吸 ---------- */
+@keyframes disc-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cover-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+/* ---------- 歌词 ---------- */
+@keyframes lyric-line-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes lyric-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes lyric-glow-breathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.18));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.4));
+  }
+}
+
+/* 逐字高亮：每个字用独立的颜色变量，靠 JS 设 --p 推进 */
+@keyframes char-rise {
+  from {
+    transform: translate3d(0, 6px, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* ---------- 空态音符点阵 ---------- */
+@keyframes note-bounce {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translate3d(0, -10px, 0) scaleY(1.25);
+    opacity: 1;
+  }
+  70% {
+    transform: translate3d(0, 2px, 0) scaleY(0.85);
+    opacity: 0.8;
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+/* ---------- 加载骨架 ---------- */
+/* 二维码扫描线：上下往复，带一点缓入缓出，看上去像在读取 */
+@keyframes qr-scan {
+  0% {
+    transform: translateY(-78px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(78px);
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-78px);
+    opacity: 0;
+  }
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 迷你播放条进度流光 ---------- */
+@keyframes minibar-glow {
+  0% {
+    transform: translate3d(-120%, 0, 0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(320%, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* ---------- 涟漪 ---------- */
+@keyframes ripple-expand {
+  from {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* ---------- Toast ---------- */
+@keyframes toast-in {
+  from {
+    transform: translate3d(0, 16px, 0) scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-out {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(0, -8px, 0) scale(0.96);
+    opacity: 0;
+  }
+}
+
+/* ---------- 拖拽手柄 ---------- */
+@keyframes handle-hint {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleX(1.18);
+  }
+}
+
+/* ---------- 选中态脉冲（当前播放歌曲旁边的小跳条） ---------- */
+@keyframes eq-bar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  25% {
+    transform: scaleY(1);
+  }
+  60% {
+    transform: scaleY(0.5);
+  }
+  80% {
+    transform: scaleY(0.85);
+  }
+}
+
+/* ---------- 会员角标流光 ---------- */
+@keyframes vip-sheen {
+  0% {
+    background-position: -160% 0;
+  }
+  100% {
+    background-position: 260% 0;
+  }
+}
+
+/* ---------- 应用级工具类 ---------- */
+.anim-fade-in {
+  animation: fade-in var(--dur) var(--ease-out) both;
+}
+
+.anim-fade-up {
+  animation: fade-up var(--dur-slow) var(--ease-out) both;
+}
+
+.anim-scale-in {
+  animation: scale-in var(--dur) var(--ease-spring) both;
+}
+
+/* 列表逐项入场：JS 设 --i，形成瀑布 */
+.stagger-item {
+  animation: fade-up 320ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item {
+    animation: none;
+  }
+}

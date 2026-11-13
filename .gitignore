@@ -1,0 +1,31 @@
+# Gradle / Android
+.gradle/
+build/
+captures/
+.cxx/
+*.iml
+.idea/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+output.json
+
+# 密钥与签名
+*.jks
+*.keystore
+keystore.properties
+release/
+
+# 运行期产物
+*.log
+*.hprof
+node_modules/
+playlists/
+cookies.json
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
