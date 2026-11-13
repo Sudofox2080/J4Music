@@ -588,7 +588,7 @@ class OpenApiSource(
  * 开源上游的地址与鉴权。
  *
  * 存在 KV 表里而不是写死在代码：换服务器/换令牌不用重新打包。
- * 这里刻意留空：仓库里不写任何真实服务器地址，用户第一次进「设置 → 云端服务」
+ * 这里刻意留空：仓库里不写任何真实服务器地址，用户第一次进「设置 → 云端 · 分发会员」
  * 填自己的地址与口令即可；没填时 isConfigured() 为 false，界面会提示去配置。
  */
 object OpenApiConfig {
@@ -599,7 +599,6 @@ object OpenApiConfig {
 
     fun baseUrl(): String = db().get(KEY_BASE)?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE
     fun token(): String = db().get(KEY_TOKEN)?.takeIf { it.isNotBlank() } ?: DEFAULT_TOKEN
-
 
     fun isConfigured(): Boolean = baseUrl().isNotEmpty() && token().isNotEmpty()
 

@@ -21,7 +21,7 @@ const TARGET_PORT = Number(process.env.TARGET_PORT || 8081)
 // SERVER-1 的出口 IP 被 QQ 的 musicu.fcg 按 IP 限流（2001 空结果），
 // 所以 QQ 搜索改走 SERVER-2 上的中继（ssh -L 隧道映射到本机 8091）。
 const RELAY_PORT = Number(process.env.RELAY_PORT || 8091)
-// 口令必须由环境变量提供；仓库里不放默认值，避免把线上令牌带进版本库
+// 口令必须由环境变量提供；仓库不放默认值，避免把线上令牌带进版本库
 const TOKEN = process.env.J4_TOKEN || ''
 const CACHE_TTL = 10 * 60 * 1000
 const COOKIE_FILE = process.env.COOKIE_FILE || path.join(__dirname, 'cookies.json')

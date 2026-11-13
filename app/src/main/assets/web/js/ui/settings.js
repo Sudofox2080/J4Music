@@ -363,6 +363,30 @@
     og.appendChild(settingRow({ icon: I.login, label: '账号与会员', sub: '自行登录会员 / 服务器分发', value: '管理', arrow: true, onClick: function () { R.push('login', {}); } }));
     og.appendChild(settingRow({ icon: I.audio, label: '本地音乐扫描', value: '去扫描', arrow: true, onClick: function () { R.push('local'); } }));
     og.appendChild(settingRow({ icon: I.translate, label: '音乐转译（.ncm 等）', value: '打开', arrow: true, onClick: function () { R.push('translate'); } }));
+    // 自检：.ncm / .qmc / .qy2 的解密逻辑有几处极易写错（XOR 下标、zlib 头、TEA 跨块混写），
+    // 给用户一个能自己确认「是这个版本的问题还是文件的问题」的入口。
+    og.appendChild(
+      settingRow({
+        icon: I.audio,
+        label: '解码器自检',
+        sub: '确认加密格式解密逻辑在本机是否正常',
+        value: '运行',
+        arrow: true,
+        onClick: function () {
+          UI.toast('正在自检…', 'info', 1200);
+          B.call('cryptoSelfTest')
+            .then(function (d) {
+              var list = (d && d.list) || [];
+              var bad = list.filter(function (x) { return !x.ok; });
+              var sub = (d ? d.pass + '/' + d.total + ' 通过' : '未知') +
+                (bad.length ? '\n\n失败项：\n' + bad.map(function (x) { return '· ' + x.name + ' — ' + (x.error || ''); }).join('\n') : '');
+              UI.actionSheet([{ label: '知道了' }], { title: '解码器自检', sub: sub });
+            })
+            .catch(function (e) { UI.toastError(e, { key: 'cryptoSelfTest' }); });
+        }
+      })
+    );
+    og.appendChild(settingRow({ icon: I.info, label: '使用说明', sub: '设置在哪、Cookie 怎么拿、连不上怎么办', value: '查看', arrow: true, onClick: function () { R.push('help', {}); } }));
     og.appendChild(
       settingRow({
         icon: I.info,
