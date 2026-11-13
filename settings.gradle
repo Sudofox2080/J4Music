@@ -1,7 +1,5 @@
 pluginManagement {
     repositories {
-        // 离线本地仓库优先，其次官方源（有网时会自动回落）
-        maven { url = new File(rootDir, '.gradle-home/m2/repository').toURI().toString(); allowInsecureProtocol = true }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -9,10 +7,8 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    // PREFER_SETTINGS 会在项目里也声明仓库时优先用这里
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        maven { url = new File(rootDir, '.gradle-home/m2/repository').toURI().toString(); allowInsecureProtocol = true }
         google()
         mavenCentral()
     }

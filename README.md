@@ -33,15 +33,15 @@ tools/console.html            网页控制台：扫码登录、粘贴 Cookie、�
 
 ## 构建
 
-需要 Android SDK（compileSdk 35）与 JDK 17：
+需要 Android SDK（compileSdk 35）与 JDK 17，Gradle 8.13：
 
 ```bash
-./gradlew :app:assembleDebug
+gradle :app:assembleDebug        # 或直接用它打开 Android Studio
 ```
 
 产物在 `app/build/outputs/apk/debug/app-debug.apk`。
 
-依赖版本集中在 `app/deps-lock.gradle` 里锁死，避免 Kotlin 元数据版本漂移。
+仓库没有内置 `gradle-wrapper.jar`（二进制不入库），想用 wrapper 就在项目根跑一次 `gradle wrapper --gradle-version 8.13`。依赖版本集中在 `app/deps-lock.gradle` 里锁死，避免 Kotlin 元数据版本漂移。
 
 ## 配置上游（不配也能放本地音乐，但在线搜索与取址不可用）
 
