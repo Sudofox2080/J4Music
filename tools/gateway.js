@@ -242,17 +242,23 @@ function slim(body, want, cached) {
  *    根本不看 `cookie` 参数。所以登录了也还是 `purl` 空 —— 必须把这两个参数拆出来单独塞进去，
  *    否则「扫码登录成功、VIP 曲目照样拿不到地址」。
  */
+// 返回「这次请求该带上的 cookie 串」，没有就返回空串。
+// 为什么要返回：上游的模块是从 req.cookies 里取登录态的（不是 query.cookie），
+// 所以这里必须把串交给调用方塞进 Cookie 头，只写进查询参数上游根本读不到。
 function injectCookie(url) {
-  if (url.pathname.indexOf('/login/') === 0) return   // 登录相关请求不能被历史 cookie 干扰
+  if (url.pathname.indexOf('/login/') === 0) return ''   // 登录相关请求不能被历史 cookie 干扰
   const plat = url.searchParams.get('platform')
-  if (!plat) return
+  if (!plat) return ''
   const fromClient = url.searchParams.get('cookie')
   const saved = cookies[plat] && cookies[plat].cookie
-  const cookie = fromClient || saved || ''
-  if (!cookie) return
-  if (!fromClient && saved) url.searchParams.set('cookie', saved)
+  // 优先用服务器存档：手机端可能还留着上一次登录失败时的旧票据，
+  // 那份过期 cookie 会盖掉服务器上刚扫码拿到的有效票，表现成「登录了却仍是试听」。
+  // 服务器存档是「分发会员」的唯一事实来源；它为空时才退回客户端自带的那份。
+  const cookie = saved || fromClient || ''
+  if (!cookie) return ''
+  if (saved) url.searchParams.set('cookie', saved)
 
-  if (plat !== 'qqmusic') return
+  if (plat !== 'qqmusic') return cookie
   // QQ 的 song_url 模块是这么写的：
   //   const songMid = query.mid ? query.mid : (await getSongDetail({id: query.id})).songs[0].mid
   // 也就是说只给 id 时，它会把 id 当成「数字歌曲 id」去反查 mid。我们手上本来就是 mid
@@ -274,6 +280,7 @@ function injectCookie(url) {
     const keyst = val('qm_keyst') || val('qqmusic_key')
     if (keyst) url.searchParams.set('qm_keyst', keyst)
   }
+  return cookie
 }
 
 /** 扫码轮询成功时，把上游回下来的 cookie 存起来 —— 这就是网页扫码登录的落地点 */
@@ -469,12 +476,16 @@ http.createServer(async (req, res) => {
 
   /* ---------------- 透明转发 ---------------- */
   try {
-    injectCookie(url)
+    const ck = injectCookie(url)
+    // 客户端自己带了 Cookie 头就尊重它，否则用这里算出来的（客户端 query / 服务器存档）
+    const upHeaders = Object.assign({}, req.headers)
+    if (ck) upHeaders['cookie'] = ck
+    else delete upHeaders['cookie']
     let out
     if (req.method === 'GET' && url.pathname === '/search' && url.searchParams.get('platform') === 'qqmusic') {
-      out = await handleSearchQQ(url, req.headers)
+      out = await handleSearchQQ(url, upHeaders)
     } else {
-      out = await fetchUpstream(req.method, url.pathname + (url.search || ''), req.headers, null)
+      out = await fetchUpstream(req.method, url.pathname + (url.search || ''), upHeaders, null)
     }
     captureLoginCookie(url, out)
     res.writeHead(out.status, Object.assign({ 'Content-Type': out.type }, cors()))
