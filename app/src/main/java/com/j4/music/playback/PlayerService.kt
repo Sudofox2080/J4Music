@@ -74,6 +74,17 @@ class PlayerService : MediaSessionService() {
      */
     @Volatile
     private var buildIndex: Int = -1
+
+    /**
+     * 队列构建的世代号。每调一次 setQueue 就 +1。
+     *
+     * 为什么需要它：setQueue 是「先播第一首、其余在后台慢慢解析、解析完整队替换」，
+     * 一次构建要花好几秒。如果用户在这期间又点了另一首歌，第二次 setQueue 会正常起播，
+     * 但**第一次构建的协程还活着**，等它跑完就会拿旧的 items 再去 setMediaItems 一次 ——
+     * 表现就是「新点的歌被上一首顶掉」。每步 await 之后比对世代号，过期就直接退出。
+     */
+    private val queueGen = java.util.concurrent.atomic.AtomicInteger(0)
+
     private var loopMode: LoopMode = LoopMode.LIST
 
     /**
@@ -361,6 +372,8 @@ class PlayerService : MediaSessionService() {
             queue.addAll(songs)
         }
         val start = startIndex.coerceIn(0, songs.size - 1)
+        // 每次调用拿一个新世代号；老协程发现自己过期就要停止改写播放器。
+        val gen = queueGen.incrementAndGet()
         // -1 表示「不在构建中」。构建期间界面上的「第几首」一律按用户点的位置算，
         // 不能读 player.currentMediaItemIndex —— 那时播放器里只有 1 首，索引恒为 0。
         buildIndex = start
@@ -371,9 +384,11 @@ class PlayerService : MediaSessionService() {
                     onError?.invoke("《${songs[start].title}》${it.message ?: "解析失败"}")
                 }.getOrNull()
             }
+            // 解析期间用户可能已经点了别的歌，这时这一份结果整个作废
+            if (gen != queueGen.get()) return@launch
             if (first == null) {
                 onError?.invoke("《${songs[start].title}》取不到可播放地址")
-                buildIndex = -1
+                if (gen == queueGen.get()) buildIndex = -1
                 emit()
                 return@launch
             }
@@ -406,6 +421,9 @@ class PlayerService : MediaSessionService() {
                 val item = withContext(Dispatchers.IO) {
                     runCatching { itemFactory.build(songs[i]) }.getOrNull()
                 }
+                // 每解析一首就检查一次：用户又点了别的歌就别再往下做了，
+                // 否则最后那次 setMediaItems 会把人家刚换的队列整个顶回去。
+                if (gen != queueGen.get()) return@launch
                 if (item == null) {
                     // 会员曲且找不到免费替代：这件「商品」直接下架，不能留在队列里当空位，
                     // 否则列表第 N 行和 player 的第 N 项错位，点哪首放哪首就全乱了。
@@ -421,8 +439,23 @@ class PlayerService : MediaSessionService() {
             var finalStart = 0
             for (i in 0 until start) if (slots[i] != null) finalStart++
 
-            val pos = p.currentPosition
-            p.setMediaItems(items, finalStart, pos)
+            // 最后一次把关：替换队列前再确认一次没被更新的一次 setQueue 覆盖
+            if (gen != queueGen.get()) return@launch
+
+            // 收尾方式要挑：`setMediaItems(全队, idx, pos)` 会把当前那首重新 prepare 一遍，
+            // 听感上是「放得好好的突然顿一下再继续」（用户会以为卡了）。
+            // 改成在当前曲目两侧批量插入：媒体项只增不减，正在播的那首不受影响。
+            val curItem = p.currentMediaItem
+            val sameAsNow = p.mediaItemCount == 1 && curItem != null && curItem.mediaId == items.getOrNull(finalStart)?.mediaId
+            if (sameAsNow && items.size > 1) {
+                val tail = items.subList(finalStart + 1, items.size)
+                val head = items.subList(0, finalStart)
+                if (tail.isNotEmpty()) p.addMediaItems(1, tail)
+                if (head.isNotEmpty()) p.addMediaItems(0, head)
+            } else {
+                val pos = p.currentPosition
+                p.setMediaItems(items, finalStart, pos)
+            }
             loopMode.applyTo(p)
             if (autoplay) p.play()
 
@@ -447,7 +480,14 @@ class PlayerService : MediaSessionService() {
 
     fun playIndex(index: Int) {
         val p = player ?: return
-        if (index !in 0 until p.mediaItemCount) return
+        if (index !in 0 until p.mediaItemCount) {
+            // 队列还在懒解析时，播放器里只有用户点过的第一首（mediaItemCount == 1），
+            // 这时点列表里的第 N 行会越界 —— 以前直接 return，表现为「点了没反应」。
+            // 改成用已知的整张歌单按新起点重建队列。
+            val known = synchronized(queue) { queue.toList() }
+            if (index in known.indices) setQueue(known, index, true)
+            return
+        }
         p.seekTo(index, 0L)
         p.play()
         emit()
