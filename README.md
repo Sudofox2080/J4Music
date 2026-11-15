@@ -4,6 +4,8 @@
 
 界面全部是 `app/src/main/assets/web` 下的 HTML/CSS/JS（原生 JS，没有构建步骤，改一行样式刷新就能看到效果），原生侧只负责三件事：播放引擎、媒体会话（后台播放与通知栏）、以及一个把所有功能暴露给 JS 的桥。
 
+[功能](#功能) · [使用说明](#怎么用) · [构建](#构建) · [配置上游](#配置上游不配也能放本地音乐但在线搜索与取址不可用) · [边界](#边界)
+
 ## 功能
 
 - **播放**：ExoPlayer + `MediaSessionService`，后台播放、通知栏三键、耳机线控；FLAC / MP3 / OGG / M4A / WAV 多协议；队列懒解析（点歌 0.5 秒内出声，不整张歌单先解析完）。
@@ -46,12 +48,16 @@ tools/console.html            网页控制台：扫码登录、粘贴 Cookie、�
 需要 Android SDK（compileSdk 35）与 JDK 17，Gradle 8.13：
 
 ```bash
-gradle :app:assembleDebug        # 或直接用它打开 Android Studio
+java -version
+gradle --version
+gradle :app:assembleDebug
 ```
 
 产物在 `app/build/outputs/apk/debug/app-debug.apk`。
 
-仓库没有内置 `gradle-wrapper.jar`（二进制不入库），想用 wrapper 就在项目根跑一次 `gradle wrapper --gradle-version 8.13`。依赖版本集中在 `app/deps-lock.gradle` 里锁死，避免 Kotlin 元数据版本漂移。
+仓库没有提交 Gradle Wrapper，需要先安装 Gradle 8.13，或在项目根运行 `gradle wrapper --gradle-version 8.13` 生成本地 Wrapper。依赖版本集中在 `app/deps-lock.gradle`，避免 Kotlin 元数据版本漂移。
+
+也可以直接用 Android Studio 打开仓库根目录；请确认 Gradle JDK 指向 JDK 17，并已安装 Android SDK Platform 35。
 
 ## 配置上游（不配也能放本地音乐，但在线搜索与取址不可用）
 
@@ -63,12 +69,29 @@ gradle :app:assembleDebug        # 或直接用它打开 Android Studio
    cd multiPlatformMusicApi && npm i --omit=dev
    PORT=8081 HOST=127.0.0.1 node app.js
    ```
-2. 用 `tools/gateway.js` 把它挡在口令后面，同时获得网页控制台与云歌单接口：
+2. 准备 Node.js 18 或更高版本，并安装网关生成二维码所需的 `qrcode` 包：
+   ```bash
+   npm install --no-save --package-lock=false qrcode
+   ```
+   `gateway.js` 从 `tools/public/index.html` 读取网页控制台。当前仓库提供的是 `tools/console.html`，首次运行前请复制到该位置：
+   ```bash
+   mkdir -p tools/public
+   cp tools/console.html tools/public/index.html
+   ```
+3. 用 `tools/gateway.js` 把上游挡在口令后面，同时获得登录态、缓存和云歌单接口：
    ```bash
    J4_TOKEN=<你自己的口令> PORT=8080 TARGET_PORT=8081 node tools/gateway.js
    ```
-3. App →「设置 → 云端服务」，填 `http://<你的地址>:8080` 与同一个口令。
-4. 想用会员音质：打开 `http://<同一地址>/`，在里面扫码或用 Cookie 登录网易云 / QQ。登录态保存在服务端，所有连这个服务的客户端共用（这就是「上游登录一次，下游全部用它的会员音源」）。
+4. App →「设置 → 云端服务」，填 `http://<你的地址>:8080` 与同一个口令。
+5. 想用会员音质：打开 `http://<同一地址>/`，在里面扫码或用 Cookie 登录网易云 / QQ。登录态保存在服务端，所有连这个服务的客户端共用。
+
+网关启动后可运行回归脚本，验证登录态、会员曲、免费曲和 QQ 取址链路：
+
+```bash
+J4_GATEWAY=http://127.0.0.1:8080 J4_TOKEN=<口令> node tools/verify-gateway.js
+```
+
+`J4_TOKEN` 必须显式设置且不要提交到仓库。`COOKIE_FILE`、`PLAYLIST_DIR` 可分别修改登录态和云歌单的持久化位置。
 
 QQ 的搜索接口对出口 IP 做突发限流，短时间连打会返回空列表；`tools/gateway.js` 里带缓存与重试，但仍然建议放在干净的 IP 上。
 
